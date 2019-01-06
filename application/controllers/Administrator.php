@@ -23,7 +23,7 @@ class Administrator extends CI_Controller {
 		$this->template->admin('admin/home', $data);
 	}
 
-	public function edit_profil()
+	public function update_profile_admin()
 	{
 		$this->cek_login();
 
@@ -66,7 +66,7 @@ class Administrator extends CI_Controller {
 		$data['fullname'] = $get->fullname;
 		$data['email'] 		= $get->email;
 
-		$this->template->admin('admin/edit_profil', $data);
+		$this->template->admin('admin/update_profile_admin', $data);
 	}
 
 	public function update_password()
