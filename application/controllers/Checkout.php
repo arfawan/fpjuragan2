@@ -7,7 +7,7 @@ class Checkout extends CI_Controller {
 	{
 		parent::__construct();
 		$this->load->library(array('template', 'cart', 'encryption'));
-		$this->load->model('app');
+		$this->load->model('user');
 	}
 
 	public function index()
@@ -40,7 +40,7 @@ class Checkout extends CI_Controller {
          {
 				if ($this->session->userdata('user_id'))
 				{
-          			$get = $this->app->get_where('t_users', ['id_user' => $this->session->userdata('user_id')]);
+          			$get = $this->user->get_where('t_users', ['id_user' => $this->session->userdata('user_id')]);
 					$user = $get->row();
 
 					$nama_pemesan = $user->fullname;
@@ -50,8 +50,8 @@ class Checkout extends CI_Controller {
 					$email = $this->input->post('user_mail', TRUE);
 				}
 
-				$profil 	= $this->app->get_where('t_profil', ['id_profil' => 1])->row();
-				$admin		= $this->app->get_where('t_admin', ['id_admin' => 1])->row();
+				$profil 	= $this->user->get_where('t_profil', ['id_profil' => 1])->row();
+				$admin		= $this->user->get_where('t_admin', ['id_admin' => 1])->row();
 				//proses
 				$this->load->library('email');
 
@@ -127,7 +127,7 @@ class Checkout extends CI_Controller {
 						'status_proses'	=> 'belum'
 					);
 
-				if ($this->app->insert('t_order', $data)) {
+				if ($this->user->insert('t_order', $data)) {
 
 					foreach ($this->cart->contents() as $key) {
 						$detail = [
@@ -136,7 +136,7 @@ class Checkout extends CI_Controller {
 									'qty' 		=> $key['qty'],
 									'biaya' 		=> $key['subtotal']
 								];
-						$this->app->insert('t_detail_order', $detail);
+						$this->user->insert('t_detail_order', $detail);
 					}
 
 					$this->cart->destroy();
@@ -160,13 +160,13 @@ class Checkout extends CI_Controller {
       	}
       }
 
-		$key['key']  = $this->app->get_where('t_profil', ['id_profil' => 1]);
+		$key['key']  = $this->user->get_where('t_profil', ['id_profil' => 1]);
 
 		if ($this->session->userdata('user_id'))
 		{
-			$this->template->olshop('checkout', $key);
+			$this->template->fpjuragan('checkout', $key);
 		} else {
-			$this->template->olshop('checkout_guest', $key);
+			$this->template->fpjuragan('checkout_guest', $key);
 		}
 	}
 
@@ -185,7 +185,7 @@ class Checkout extends CI_Controller {
 			if ($this->form_validation->run() == TRUE)
 			{
 		      $prov = explode(",", $this->encryption->decrypt($this->input->post('prov', TRUE)));
-				$key  = $this->app->get_where('t_profil', ['id_profil' => 1])->row();
+				$key  = $this->user->get_where('t_profil', ['id_profil' => 1])->row();
 		      $curl = curl_init();
 
 		      curl_setopt_array($curl, array(
@@ -236,7 +236,7 @@ class Checkout extends CI_Controller {
 
 			if ($this->form_validation->run() == TRUE)
 			{
-				$api  = $this->app->get_where('t_profil', ['id_profil' => 1])->row();
+				$api  = $this->user->get_where('t_profil', ['id_profil' => 1])->row();
 				$asal = $api->asal;
 				$dest = explode(",", $this->encryption->decrypt($this->input->post('dest', TRUE)));
 				$kurir = $this->input->post('kurir', TRUE);
@@ -258,7 +258,7 @@ class Checkout extends CI_Controller {
 				  CURLOPT_CUSTOMREQUEST => "POST",
 				  CURLOPT_POSTFIELDS => "origin=$asal&destination=$dest[0]&weight=$berat&courier=$kurir",
 				  CURLOPT_HTTPHEADER => array(
-				    "content-type: application/x-www-form-urlencoded",
+				    "content-type: userlication/x-www-form-urlencoded",
 				    "key: ".$api->api_key
 				  ),
 				));

@@ -7,7 +7,7 @@ class Home extends CI_Controller {
 	{
 		parent::__construct();
 		$this->load->library(array('template', 'cart'));
-		$this->load->model('app');
+		$this->load->model('user');
 	}
 
 	public function index($offset=0)
@@ -15,7 +15,7 @@ class Home extends CI_Controller {
 		$this->load->library('pagination');
       //configure
       $config['base_url'] = base_url().'home/index';
-      $config['total_rows'] = $this->app->get_all('t_items')->num_rows();
+      $config['total_rows'] = $this->user->get_all('t_items')->num_rows();
       $config['per_page'] = 6;
       $config['uri_segment'] = 3;
 
@@ -25,11 +25,11 @@ class Home extends CI_Controller {
 
 		if ($this->session->userdata('user_login') == TRUE)
 		{
-			$data['fav'] = $this->app->get_where('t_favorite', ['id_user' => $this->session->userdata('user_id')]);
+			$data['fav'] = $this->user->get_where('t_favorite', ['id_user' => $this->session->userdata('user_id')]);
 		}
 
-      $data['data'] 		= $this->app->select_where_limit('t_items', ['aktif' => 1], $config['per_page'], $offset);
-		$this->template->olshop('home', $data);
+      $data['data'] 		= $this->user->select_where_limit('t_items', ['aktif' => 1], $config['per_page'], $offset);
+		$this->template->fpjuragan('home', $data);
 
 	}
 
@@ -61,16 +61,16 @@ class Home extends CI_Controller {
 		$this->load->library('pagination');
       //configure
       $config['base_url'] = base_url().'home/search/'.$search;
-      $config['total_rows'] = $this->app->get_like('t_items', ['aktif' => 1], ['nama_item' => $search])->num_rows();
+      $config['total_rows'] = $this->user->get_like('t_items', ['aktif' => 1], ['nama_item' => $search])->num_rows();
       $config['per_page'] = 6;
       $config['uri_segment'] = 4;
 
       $this->pagination->initialize($config);
 
       $data['link']  = $this->pagination->create_links();
-      $data['data'] 	= $this->app->select_like('t_items', ['aktif' => 1], ['nama_item' => $search], $config['per_page'], $offset);
+      $data['data'] 	= $this->user->select_like('t_items', ['aktif' => 1], ['nama_item' => $search], $config['per_page'], $offset);
 		$data['search'] = $search;
-		$this->template->olshop('home', $data);
+		$this->template->fpjuragan('home', $data);
 
 	}
 
@@ -94,17 +94,17 @@ class Home extends CI_Controller {
 		$this->load->library('pagination');
 		//configure
 		$config['base_url'] 		= base_url().'home/kategori/'.$this->uri->segment(3);
-		$config['total_rows'] 	= $this->app->get_where($table, ['i.aktif' => 1, 'k.url' => $url])->num_rows();
+		$config['total_rows'] 	= $this->user->get_where($table, ['i.aktif' => 1, 'k.url' => $url])->num_rows();
 		$config['per_page'] 		= 6;
 		$config['uri_segment'] 	= 4;
 
 		$this->pagination->initialize($config);
 
 		$data['link']  = $this->pagination->create_links();
-		$data['data'] 	= $this->app->select_where_limit($table, ['i.aktif' => 1, 'k.url' => $url], $config['per_page'], $offset);
+		$data['data'] 	= $this->user->select_where_limit($table, ['i.aktif' => 1, 'k.url' => $url], $config['per_page'], $offset);
 		$data['url'] = ucwords(str_replace(['-','%20','_'], ' ', $this->uri->segment(3)));
 
-		$this->template->olshop('home', $data);
+		$this->template->fpjuragan('home', $data);
 
 	}
 
@@ -116,17 +116,17 @@ class Home extends CI_Controller {
 
 			$id = $this->uri->segment(3);
 
-			$items = $this->app->get_where('t_items', array('link' => $id));
+			$items = $this->user->get_where('t_items', array('link' => $id));
 			$get = $items->row();
 
 			$table = "t_rkategori rk
 							JOIN t_kategori k ON (k.id_kategori = rk.id_kategori)";
 
-			$data['kat'] 	= $this->app->get_where($table, array('rk.id_item' => $get->id_item));
+			$data['kat'] 	= $this->user->get_where($table, array('rk.id_item' => $get->id_item));
 			$data['data'] 	= $items;
-			$data['img'] 	= $this->app->get_where('t_img', ['id_item' => $get->id_item]);
+			$data['img'] 	= $this->user->get_where('t_img', ['id_item' => $get->id_item]);
 
-			$this->template->olshop('item_detail', $data);
+			$this->template->fpjuragan('item_detail', $data);
 
 		} else {
 
@@ -170,7 +170,7 @@ class Home extends CI_Controller {
 					'status' 	=> 1
 				);
 
-				if ($this->app->insert('t_users', $data))
+				if ($this->user->insert('t_users', $data))
 				{
 
 					$halaman = 'reg_success';
@@ -210,7 +210,7 @@ class Home extends CI_Controller {
 			'alamat' => $this->input->post('alamat', TRUE),
 		);
 
-		$this->template->olshop($halaman, $data);
+		$this->template->fpjuragan($halaman, $data);
 
 	}
 
@@ -224,7 +224,7 @@ class Home extends CI_Controller {
       $pass  = $this->input->post('password', TRUE);
 			$where = "username = '".$user."' && status = 1 || email = '".$user."' && status = 1";
 
-			$cek 	 = $this->app->get_where('t_users', $where);
+			$cek 	 = $this->user->get_where('t_users', $where);
 
       if ($cek->num_rows() > 0)
 			{
@@ -262,7 +262,7 @@ class Home extends CI_Controller {
          redirect('home');
       }
 
-		$profil['data'] = $this->app->get_all('t_profil');
+		$profil['data'] = $this->user->get_all('t_profil');
 
 		$this->load->view('login', $profil);
 
@@ -276,7 +276,7 @@ class Home extends CI_Controller {
          redirect('home/login');
       }
 
-		$get = $this->app->get_where('t_users', array('id_user' => $this->session->userdata('user_id')))->row();
+		$get = $this->user->get_where('t_users', array('id_user' => $this->session->userdata('user_id')))->row();
 
 		if($this->input->post('submit', TRUE) == 'Submit')
 		{
@@ -304,7 +304,7 @@ class Home extends CI_Controller {
 					);
 					$where = ['id_user' => $this->session->userdata('user_id')];
 
-					if ($this->app->update('t_users', $data, $where))
+					if ($this->user->update('t_users', $data, $where))
 					{
 
 						$this->session->set_userdata(array('name' => $this->input->post('nama1', TRUE).' '.$this->input->post('nama2', TRUE)));
@@ -336,7 +336,7 @@ class Home extends CI_Controller {
 		$data['telp'] 	= $get->telp;
 		$data['alamat']= $get->alamat;
 
-		$this->template->olshop('user_profil', $data);
+		$this->template->fpjuragan('user_profil', $data);
 
 	}
 
@@ -360,7 +360,7 @@ class Home extends CI_Controller {
 			if ($this->form_validation->run() == TRUE)
 			{
 
-				$get_data = $this->app->get_where('t_users', array('id_user' => $this->session->userdata('user_id')))->row();
+				$get_data = $this->user->get_where('t_users', array('id_user' => $this->session->userdata('user_id')))->row();
 
 				if (!password_verify($this->input->post('pass3',TRUE), $get_data->password))
 				{
@@ -373,7 +373,7 @@ class Home extends CI_Controller {
 					$data['password'] = password_hash($pass, PASSWORD_DEFAULT, ['cost' => 10]);
 					$cond = array('id_user' => $this->session->userdata('user_id'));
 
-					$this->app->update('t_users', $data, $cond);
+					$this->user->update('t_users', $data, $cond);
 
 					redirect('home/logout');
 
@@ -383,7 +383,7 @@ class Home extends CI_Controller {
 
 		}
 
-		$this->template->olshop('pass');
+		$this->template->fpjuragan('pass');
 
 	}
 
@@ -396,9 +396,9 @@ class Home extends CI_Controller {
 		}
 
 
-		$data['get'] = $this->app->get_where('t_order', ['id_user' => $this->session->userdata('user_id')]);
+		$data['get'] = $this->user->get_where('t_order', ['id_user' => $this->session->userdata('user_id')]);
 
-		$this->template->olshop('transaksi', $data);
+		$this->template->fpjuragan('transaksi', $data);
 
 	}
 
@@ -414,9 +414,9 @@ class Home extends CI_Controller {
 						JOIN t_detail_order do ON (o.id_order = do.id_order)
 						JOIN t_items i ON (do.id_item = i.id_item)";
 
-		$data['get'] = $this->app->get_where($table, ['o.id_order' => $this->uri->segment(3)]);
+		$data['get'] = $this->user->get_where($table, ['o.id_order' => $this->uri->segment(3)]);
 
-		$this->template->olshop('detail_transaksi', $data);
+		$this->template->fpjuragan('detail_transaksi', $data);
 
 	}
 
@@ -430,17 +430,17 @@ class Home extends CI_Controller {
 		//kembalikan stok
 		$table 	= 't_detail_order do
 							JOIN t_items i ON (do.id_item = i.id_item)';
-		$get 		= $this->app->get_where($table, ['id_order' => $this->uri->segment(3)]);
+		$get 		= $this->user->get_where($table, ['id_order' => $this->uri->segment(3)]);
 
 		foreach ($get->result() as $key) {
 			//jumlahkan stok
 			$stok = ($key->qty + $key->stok);
 			//update stok
-			$this->app->update('t_items', ['stok' => $stok], ['id_item' => $key->id_item]);
+			$this->user->update('t_items', ['stok' => $stok], ['id_item' => $key->id_item]);
 		}
 
 		$tables = array('t_order', 't_detail_order');
-		$this->app->delete($tables, ['id_order' => $this->uri->segment(3)]);
+		$this->user->delete($tables, ['id_order' => $this->uri->segment(3)]);
 
 		redirect('home/transaksi');
 
@@ -454,7 +454,7 @@ class Home extends CI_Controller {
 			redirect('home');
 		}
 
-		$this->app->update('t_order', ['status_proses' => 'selesai'], ['id_order' => $this->uri->segment(3)]);
+		$this->user->update('t_order', ['status_proses' => 'selesai'], ['id_order' => $this->uri->segment(3)]);
 
 		redirect('home/transaksi');
 
@@ -471,7 +471,7 @@ class Home extends CI_Controller {
 			if ($this->form_validation->run() == TRUE)
          	{
 				//cek data
-				$get = $this->app->get_where('t_order', ['id_order' => $this->input->post('id_invoice', TRUE)]);
+				$get = $this->user->get_where('t_order', ['id_order' => $this->input->post('id_invoice', TRUE)]);
 				$hitung = $get->num_rows();
 
 				if ($hitung > 0)
@@ -493,12 +493,12 @@ class Home extends CI_Controller {
 			         $bukti = array ('bukti' => $gbr['file_name']);
 						$where = array ('id_order' => $detail->id_order);
 						//update data
-						$update = $this->app->update('t_order', $bukti, $where);
+						$update = $this->user->update('t_order', $bukti, $where);
 
 						if ($update)
 						{
-							$admin 	= $this->app->get_where('t_admin', ['id_admin' => 1])->row();
-							$profil 	= $this->app->get_where('t_profil', ['id_profil' => 1])->row();
+							$admin 	= $this->user->get_where('t_admin', ['id_admin' => 1])->row();
+							$profil 	= $this->user->get_where('t_profil', ['id_profil' => 1])->row();
 
 							//proses
 			       		  $this->load->library('email');
@@ -555,7 +555,7 @@ class Home extends CI_Controller {
 		}
 
 		$data['id_invoice'] = $this->input->post('id_invoice', TRUE);
-		$this->template->olshop('up_bukti', $data);
+		$this->template->fpjuragan('up_bukti', $data);
 	}
 
 	public function logout()

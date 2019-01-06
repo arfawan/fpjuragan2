@@ -7,7 +7,7 @@ class Lost_User extends CI_Controller {
 	{
 		parent::__construct();
 		$this->load->library('form_validation');
-      $this->load->model('app');
+      $this->load->model('user');
 	}
 
    public function index()
@@ -18,12 +18,12 @@ class Lost_User extends CI_Controller {
 
          if ($this->form_validation->run() == TRUE)
          {
-            $get = $this->app->get_where('t_users', array('email' => $this->input->post('email', TRUE)));
+            $get = $this->user->get_where('t_users', array('email' => $this->input->post('email', TRUE)));
 
             if ($get->num_rows() > 0)
             {
                //proses
-		      $profil = $this->app->get_where('t_profil', ['id_profil' => 1])->row();
+		      $profil = $this->user->get_where('t_profil', ['id_profil' => 1])->row();
                   $this->load->library('email');
                $config['charset'] = 'utf-8';
                $config['useragent'] = 'Coba';
@@ -56,7 +56,7 @@ class Lost_User extends CI_Controller {
                {
                   $data['reset'] = $key;
                   $cond['email'] = $this->input->post('email', TRUE);
-                  $this->app->update('t_users', $data, $cond);
+                  $this->user->update('t_users', $data, $cond);
 
                   $this->session->set_flashdata('success', "Email berhasil dikirim.. silahkan cek email anda");
                } else {
@@ -69,7 +69,7 @@ class Lost_User extends CI_Controller {
             }
          }
       }
-		$data['data'] = $this->app->get_all('t_profil');
+		$data['data'] = $this->user->get_all('t_profil');
 		$this->load->view('lost_pass', $data);
    }
 
@@ -92,7 +92,7 @@ class Lost_User extends CI_Controller {
 
 					$cond['reset'] = $this->uri->segment(3);
 
-					$this->app->update('t_users', $data, $cond);
+					$this->user->update('t_users', $data, $cond);
 
 					$this->session->set_flashdata('success', "Password berhasil diperbarui");
 

@@ -7,12 +7,12 @@ class Cart extends CI_Controller {
 	{
 		parent::__construct();
 		$this->load->library(array('template', 'cart'));
-		$this->load->model('app');
+		$this->load->model('user');
 	}
 
 	public function index()
 	{
-      $this->template->olshop('cart');
+      $this->template->fpjuragan('cart');
 	}
 
 	public function add()
@@ -20,7 +20,7 @@ class Cart extends CI_Controller {
 		if (is_numeric($this->uri->segment(3)))
 		{
 			$id 	= $this->uri->segment(3);
-			$get 	= $this->app->get_where('t_items', array('link' => $id))->row();
+			$get 	= $this->user->get_where('t_items', array('link' => $id))->row();
 
 			if ($this->input->post('submit', TRUE) == 'Submit')
 			{
@@ -82,7 +82,7 @@ class Cart extends CI_Controller {
 				}
 
 				//ambil stok terkini
-				$get = $this->app->get_where('t_items', ['id_item' => $id])->row();
+				$get = $this->user->get_where('t_items', ['id_item' => $id])->row();
 
 				$stok = ($get->stok + $quantity);
 
@@ -105,7 +105,7 @@ class Cart extends CI_Controller {
             redirect('cart');
          } else {
 
-            $this->template->olshop('cart');
+            $this->template->fpjuragan('cart');
          }
 
       } else {
