@@ -18,16 +18,13 @@ class Setting extends CI_Controller {
       {
         //validasi
         $this->form_validation->set_rules('title', 'Title', 'required|min_length[5]|max_length[255]');
-        $this->form_validation->set_rules('hp', 'Phone', 'required|min_length[5]|max_length[15]|numeric');
-        $this->form_validation->set_rules('fb', 'Facebook', 'required|min_length[5]|max_length[255]');
-        $this->form_validation->set_rules('twitter', 'Twitter', 'required|min_length[5]|max_length[255]');
-        $this->form_validation->set_rules('gplus', 'G+', 'required|min_length[5]|max_length[255]');
+    
         $this->form_validation->set_rules('alamat', 'Alamat Toko', 'required|min_length[5]');
-				$this->form_validation->set_rules('email_toko', 'Email Toko', 'required|valid_email');
-				$this->form_validation->set_rules('pass_toko', 'Password Email Toko', 'required|min_length[5]');
-				$this->form_validation->set_rules('asal', 'ID Kota / Kabupaten', 'required|max_length[3]|numeric');
-				$this->form_validation->set_rules('api_key', 'Api Key', 'required|min_length[5]');
-				$this->form_validation->set_rules('rekening', 'Rekening', 'required|min_length[8]');
+		$this->form_validation->set_rules('email_toko', 'Email Toko', 'required|valid_email');
+		$this->form_validation->set_rules('pass_toko', 'Password Email Toko', 'required|min_length[5]');
+		$this->form_validation->set_rules('asal', 'ID Kota / Kabupaten', 'required|max_length[3]|numeric');
+		$this->form_validation->set_rules('api_key', 'Api Key', 'required|min_length[5]');
+		$this->form_validation->set_rules('rekening', 'Rekening', 'required|min_length[8]');
 
         if ($this->form_validation->run() == TRUE)
         {
