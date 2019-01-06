@@ -23,7 +23,7 @@ class Administrator extends CI_Controller {
 		$this->template->admin('admin/home', $data);
 	}
 
-	public function update_profile_admin()
+	public function 	()
 	{
 		$this->cek_login();
 
@@ -103,14 +103,7 @@ class Administrator extends CI_Controller {
 		$this->template->admin('admin/update_pass');
 	}
 
-	public function report()
-	{
-		$data = $this->admin->report();
-
-		foreach ($data->result() as $key) {
-			echo ($key->total - $key->biaya);
-		}
-	}
+	
 
 	function cek_login()
 	{
