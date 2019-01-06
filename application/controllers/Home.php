@@ -10,7 +10,7 @@ class Home extends CI_Controller {
 		$this->load->model('user');
 	}
 
-	public function index($offset=0)
+	public function index()
 	{
 		$this->load->library('pagination');
       //configure
@@ -33,81 +33,9 @@ class Home extends CI_Controller {
 
 	}
 
-	public function search()
-	{
-		if ($this->input->post('search', TRUE))
-		{
-
-			$this->session->set_userdata(['s' => $this->input->post('search', TRUE)]);
-			$search = $this->session->userdata('s');
-
-		} else {
-
-			$search = $this->uri->segment(3);
-
-		}
-
-		if (!$this->uri->segment(4))
-		{
-
-			$offset = 0;
-
-		} else {
-
-			$offset = $this->uri->segment(4);
-
-		}
-
-		$this->load->library('pagination');
-      //configure
-      $config['base_url'] = base_url().'home/search/'.$search;
-      $config['total_rows'] = $this->user->get_like('t_items', ['aktif' => 1], ['nama_item' => $search])->num_rows();
-      $config['per_page'] = 6;
-      $config['uri_segment'] = 4;
-
-      $this->pagination->initialize($config);
-
-      $data['link']  = $this->pagination->create_links();
-      $data['data'] 	= $this->user->select_like('t_items', ['aktif' => 1], ['nama_item' => $search], $config['per_page'], $offset);
-		$data['search'] = $search;
-		$this->template->fpjuragan('home', $data);
-
-	}
 
 
-	public function kategori()
-	{
-
-		if (!$this->uri->segment(3))
-		{
-			redirect('home');
-		}
-
-		$offset = (!$this->uri->segment(4)) ? 0 : $this->uri->segment(4);
-
-		$url = strtolower(str_replace([' ','%20','_'], '-', $this->uri->segment(3)));
-
-		$table = 't_kategori k
-						JOIN t_rkategori rk ON (k.id_kategori = rk.id_kategori)
-						JOIN t_items i ON (rk.id_item = i.id_item)';
-		//load library pagination
-		$this->load->library('pagination');
-		//configure
-		$config['base_url'] 		= base_url().'home/kategori/'.$this->uri->segment(3);
-		$config['total_rows'] 	= $this->user->get_where($table, ['i.aktif' => 1, 'k.url' => $url])->num_rows();
-		$config['per_page'] 		= 6;
-		$config['uri_segment'] 	= 4;
-
-		$this->pagination->initialize($config);
-
-		$data['link']  = $this->pagination->create_links();
-		$data['data'] 	= $this->user->select_where_limit($table, ['i.aktif' => 1, 'k.url' => $url], $config['per_page'], $offset);
-		$data['url'] = ucwords(str_replace(['-','%20','_'], ' ', $this->uri->segment(3)));
-
-		$this->template->fpjuragan('home', $data);
-
-	}
-
+	
 	public function detail()
 	{
 
@@ -460,103 +388,41 @@ class Home extends CI_Controller {
 
 	}
 
-	public function upload_bukti()
+
+	public function kategori()
 	{
-		if ($this->input->post('submit', TRUE) == 'Submit')
+
+		if (!$this->uri->segment(3))
 		{
-			$this->load->library('form_validation');
-
-			$this->form_validation->set_rules('id_invoice', 'No. Invoice / Id Pemesanan', 'required|min_length[10]');
-
-			if ($this->form_validation->run() == TRUE)
-         	{
-				//cek data
-				$get = $this->user->get_where('t_order', ['id_order' => $this->input->post('id_invoice', TRUE)]);
-				$hitung = $get->num_rows();
-
-				if ($hitung > 0)
-				{
-					//fetch data
-					$detail = $get->row();
-
-					$config['upload_path'] = './assets/bukti/';
-					$config['allowed_types'] = 'jpg|png|jpeg';
-					$config['max_size'] = '2048';
-					$config['file_name'] = 'bukti'.$detail->id_order;
-
-					$this->load->library('upload', $config);
-
-					if ($this->upload->do_upload('bukti'))
-					{
-						$gbr = $this->upload->data();
-						//proses insert data item
-			         $bukti = array ('bukti' => $gbr['file_name']);
-						$where = array ('id_order' => $detail->id_order);
-						//update data
-						$update = $this->user->update('t_order', $bukti, $where);
-
-						if ($update)
-						{
-							$admin 	= $this->user->get_where('t_admin', ['id_admin' => 1])->row();
-							$profil 	= $this->user->get_where('t_profil', ['id_profil' => 1])->row();
-
-							//proses
-			       		  $this->load->library('email');
-	               $config['charset'] = 'utf-8';
-	               $config['useragent'] = 'Coba';
-	               $config['protocol'] = 'smtp';
-	               $config['mailtype'] = 'html';
-	               $config['smtp_host'] = 'ssl://smtp.gmail.com';
-	               $config['smtp_port'] = '465';
-	               $config['smtp_timeout'] = '5';
-                  $config['smtp_user'] = $profil->email_toko; //isi dengan email gmail
-                  $config['smtp_pass'] = $profil->pass_toko; //isi dengan password
-
-               $config['crlf'] = "\r\n";
-               $config['newline'] = "\r\n";
-               $config['wordwrap'] = TRUE;
-
-            
-                  $this->email->initialize($config);
-
-							$tanggal = date('d - m - Y');
-
-			        $this->email->from($profil->email_toko, $profil->title);
-			        $this->email->to($admin->email);
-			        $this->email->subject('Status Pembayaran');
-			        $this->email->message(
-			          'Pesanan dengan ID. '.$detail->id_order.' Telah dibayar pada tanggal '.$tanggal.', silahkan cek menu transaksi untuk melihat bukti pembayaran
-								'
-			        );
-
-							if ($this->email->send())
-							{
-								echo '<script type="text/javascript">alert("Bukti Pembayaran Berhasil Diunggah...");window.location.replace("'.base_url().'")</script>';
-							}
-							
-						} else {
-
-							echo '<script type="text/javascript">alert("Maaf Telah Terjadi Kesalahan... silahkan ulangi lagi")</script>';
-
-						}
-
-					} else {
-
-						echo '<script type="text/javascript">alert("Bukti Gagal Diunggah...")</script>';
-
-					}
-
-				} else {
-
-					echo '<script type="text/javascript">alert("Id Pemesanan Tidak dikenali..")</script>';
-
-				}
-			}
+			redirect('home');
 		}
 
-		$data['id_invoice'] = $this->input->post('id_invoice', TRUE);
-		$this->template->fpjuragan('up_bukti', $data);
+		$offset = (!$this->uri->segment(4)) ? 0 : $this->uri->segment(4);
+
+		$url = strtolower(str_replace([' ','%20','_'], '-', $this->uri->segment(3)));
+
+		$table = 't_kategori k
+						JOIN t_rkategori rk ON (k.id_kategori = rk.id_kategori)
+						JOIN t_items i ON (rk.id_item = i.id_item)';
+		//load library pagination
+		$this->load->library('pagination');
+		//configure
+		$config['base_url'] 		= base_url().'home/kategori/'.$this->uri->segment(3);
+		$config['total_rows'] 	= $this->user->get_where($table, ['i.aktif' => 1, 'k.url' => $url])->num_rows();
+		$config['per_page'] 		= 6;
+		$config['uri_segment'] 	= 4;
+
+		$this->pagination->initialize($config);
+
+		$data['link']  = $this->pagination->create_links();
+		$data['data'] 	= $this->user->select_where_limit($table, ['i.aktif' => 1, 'k.url' => $url], $config['per_page'], $offset);
+		$data['url'] = ucwords(str_replace(['-','%20','_'], ' ', $this->uri->segment(3)));
+
+		$this->template->fpjuragan('home', $data);
+
 	}
+
+
 
 	public function logout()
 	{
